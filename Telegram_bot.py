@@ -13,7 +13,7 @@ print(proxy)
 proxy_addr = 'https://' + proxy.host + ":" + str(proxy.port)
 print(proxy_addr)
 telebot.apihelper.proxy = {'https': proxy_addr}
-bot = telebot.TeleBot('1158479806:AAF3rqRur5sZK8QGrUA6W3CnjQn9N_2yfJc')
+bot = telebot.TeleBot('')
 # bot.send_message(489122274, "А можно ведь просто так отправить сообщеньку?")
 user_statements = dict()
 
