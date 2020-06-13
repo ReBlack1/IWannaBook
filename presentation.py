@@ -514,7 +514,7 @@ def try4():
     for key in keys:
         G.remove_node(key)
     persons = []
-
+    per_vec = []
     for node in G.nodes:
         token_word = tokenizer.get_stat_token_word(morph, node)
         if token_word is None or token_word.find("NOUN") == -1:
@@ -525,10 +525,12 @@ def try4():
         is_person = clf.predict(vec.reshape(1, -1))
         if is_person == 0:
             persons.append(node)
+            per_vec.append(vec)
     print("persons = ", persons)
+    test_v = tokenizer.get_stat_token_word(morph, "рабство")
+    test_vec = 
 
     for per in persons:
-
         print(per, G[per])
 
     node_color = [(G.degree(v))*3 for v in G]
