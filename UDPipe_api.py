@@ -5,6 +5,7 @@ import requests as req
 import matplotlib.pyplot as plt
 import networkx as nx
 
+
 def get_sintax(text):
 
     url = "http://lindat.mff.cuni.cz/services/udpipe/api/process?tokenizer&tagger&parser&"

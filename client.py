@@ -39,6 +39,8 @@ def get_str_vec(word, serv_host='localhost', serv_port=9090, resp_len=2048):
 
 
 def get_word_by_vec(bytes_vec, serv_host='localhost', serv_port=9090, resp_len=2048):
+    if len(bytes_vec) != 1200:
+        return json.dumps({"res": [("ERROR_NOUN", 0)]}).encode()
     sock = socket.socket()
     sock.connect((serv_host, serv_port))
     req_dict = {"method": "get_word"}

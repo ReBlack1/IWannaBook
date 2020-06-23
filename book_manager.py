@@ -4,9 +4,7 @@ import zipfile
 import requests
 from lxml import etree
 import time
-import sqlite_manager as sqlite
-from pyunpack import Archive
-from proxy_manager import get_proxy_set
+import pickle
 
 def open_fb2_book(path, code='UTF-8'):
     """
@@ -61,7 +59,8 @@ def flibusta_load_book(number, proxy=None):
     flibusta_url = 'http://flibusta.is/b/' + str(number) + "/fb2"
 
     req = requests.get(flibusta_url, proxies=proxy)
-    f = open(r"E:\books\%s.zip" % str(number), "wb")
+    path = r"test_books\%s.zip" % str(number)
+    f = open(path, "wb")
     f.write(req.content)  # записываем содержимое в файл;
     f.close()
 
@@ -97,16 +96,28 @@ def get_status_of_flibusta_book_page(book_number, proxy=None):
     """
     pass
 
-# proxy = {"http" : "http://34.253.177.131:3128"}
+# st = time.time()
+# G = BL.compress_book(r"test_books\slugi.zip")
+# print("Время обработки = ", str(time.time() - st))
 #
-# for i in range(11596, 150000):
-#     while True:
-#         try:
-#             print(i)
-#             flibusta_load_book(i, proxy)
-#             break
-#         except Exception as e:
-#             print(e)
-#             print(e.args)
-#             pr = get_proxy_set()[0]  # TODO оже в трай ексепт
-#             proxy = {"http": "http://" + str(pr.host) + ":" + str(pr.port)}
+# with open(r"graph_models\slugi_graph.plk", 'wb') as f:
+#     pickle.dump(G, f)
+
+import asyncio
+from proxybroker import Broker
+
+
+
+
+# pr = Proxies()
+# print(pr)
+# pr.run_finding()
+# print(pr.get_new_proxy())
+# exit()
+# proxy = {"http": "http://" + str(pr[0].host) + ":" + str(pr[0].port)}
+# pr.pop(0)
+
+# proxy = {"HTTPS": r"https://SelReBlack1:K1g1GfI@5.44.45.207:45785"}
+
+
+

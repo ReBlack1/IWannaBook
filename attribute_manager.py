@@ -40,17 +40,24 @@ class AttributeManager:
         self.adv_list = []
 
         xml = bm.open_book(path)
+        print()
+        print()
+
+        print(xml.decode())
+        print()
+        print()
         _xpath = etree.XPath(r'//*')
         dom = etree.XML(xml)
         ans = _xpath(dom)
-        for i in ans[:200]:
+
+        for i in ans:
             """Обработка заголовков, автора и т.д. через i.text """
             if re.search(r"\b[p]", i.tag):  # предполагаю, что строки с текстом заканчиваются на p
                 """ Построчная обработка книги перед предпроцессингом (Только текста) """
-                p_text = self.preprocess_text(i.text)  # Обработка каждой строки книги
+                p_text = self.preprocess_text(self, i.text)  # Обработка каждой строки книги
                 """ Построчная обработка после предпроцессинга (Только текста)"""
                 self.get_structure(p_text)
-        # print(self.counter)
+        print(self.counter)
         """ Работа с вторичными данными"""
         self.swear_set = self.swear_counter(self.counter)
         x_plt = [i for i in range(self._avd_quantity, len(self.noun_list)*self._avd_quantity+1, self._avd_quantity)]
@@ -129,11 +136,11 @@ class AttributeManager:
         return swear_set
 
 
-conn = sqlite.get_connection(r"D:\Kursovaya\BookDB.db")
-id_loading_book_list = sqlite.get_id_loading_book(conn)
+# conn = sqlite.get_connection(r"D:\Kursovaya\BookDB.db")
+# id_loading_book_list = sqlite.get_id_loading_book(conn)
 
 BA = AttributeManager()
 st = time.time()
-BA.new_book_analys(r"D:\Kursovaya\books\159352.zip")
+BA.new_book_analys(r"D:\py_projects\IWonnaBook\test_books\1.zip")
 print(time.time() - st)
 

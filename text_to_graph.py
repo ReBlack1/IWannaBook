@@ -10,8 +10,9 @@ import client
 import pymorphy2
 import tokenizer
 from scipy.spatial.distance import *
-from training_manager import *
+# from training_manager import *
 import math
+import pickle
 
 
 def __is_continue_word(word):
@@ -105,7 +106,9 @@ def request_to_graph(text):
     G = nx.MultiGraph()
     morph = pymorphy2.MorphAnalyzer()
 
-    clf = train_logistic_regression(300, "person_train", const.person_list, const.non_person_list)
+    # clf = train_logistic_regression(300, "person_train", const.person_list, const.non_person_list)
+    with open(r"person_train", 'r') as f:
+        clf = pickle.load(f)  # train_logistic_regression(300, "person_train", const.non_person_list, const.person_list)
 
     sintax = get_sintax(text)
     __add_to_graph(sintax, G)

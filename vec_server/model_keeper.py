@@ -23,6 +23,10 @@ def get_vector_from_model(cur_model, word):
     except KeyError:
         return None
 
+
+vec1 = get_vector_from_model(model, "герой_NOUN")
+print(vec1)
+print(np.frombuffer(vec1.tobytes(), dtype="float32"))
 temp_vec = None
 
 sock = socket.socket()
@@ -33,7 +37,7 @@ while 1:
 
     print('connected:', addr)
 
-    data = conn.recv(10000)
+    data = conn.recv(2048)
     print(data)
     print()
     if data.find("get_vector".encode()) != -1:

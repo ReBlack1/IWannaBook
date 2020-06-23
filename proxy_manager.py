@@ -29,8 +29,8 @@ class Proxies:
         while True:
             proxy = await proxies.get()
             if proxy is None: break
-            if len(self._proxy_set) < self._buffer_limit:
-                await self._proxy_set.add((str(proxy.host) + ":" + str(proxy.port), proxy.avg_resp_time))
+            # if len(self._proxy_set) < self._buffer_limit:
+            self._proxy_set.add((str(proxy.host) + ":" + str(proxy.port), proxy.avg_resp_time))
 
     def run_finding(self):
         print("Начинаю поиск прокси")
@@ -57,14 +57,15 @@ async def show(proxies, lst):
         lst.append(proxy)
     return lst
 
+
 def get_proxy_set():
     proxies = asyncio.Queue()
     broker = Broker(proxies)
     lst = []
-
     tasks = asyncio.gather(
-        broker.find(types=['HTTPS'], limit=5),
+        broker.find(types=['HTTPS'], limit=1),
         show(proxies, lst))
     loop = asyncio.get_event_loop()
     loop.run_until_complete(tasks)
     return lst
+

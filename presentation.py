@@ -38,16 +38,18 @@ def add_to_graph(sintax, graph):
 def try1():
     G = nx.MultiGraph()
 
-    path = r"test_books\slugi.zip"
+    path = r"test_books\1.zip"
     xml = bm.open_book(path)
     _xpath = etree.XPath(r'//*')
     dom = etree.XML(xml)
     ans = _xpath(dom)
 
-    for i in ans[550:570]:
+    for i in ans:
         """Обработка заголовков, автора и т.д. через i.text """
         if re.search(r"\b[p]", i.tag):  # предполагаю, что строки с текстом заканчиваются на p
             """ Построчная обработка книги перед предпроцессингом (Только текста) """
+            if not i.text:
+                continue
             sintax = get_sintax(i.text)
             add_to_graph(sintax, G)
 
@@ -72,9 +74,11 @@ def is_continue_word(word):
         return True
     if word in ["и", "в", "то", "что", "не", "как", "на", "из", "с", "а", "под", "только", "или", "еще", "да", "от",
                 "у", "около", "но", "при", "же", "так", "если", "за", "который", "к", "те", "этот", "этого", "того",
-                "чтобы", "чтоб", "бы", "по", "ли", "ну"]:
+                "чтобы  ", "чтоб", "бы", "по", "ли", "ну"]:
         return True
     if word in ["!", "..."]:
+        return True
+    if word in ["почти", "быть", "буду", "был", "была", "были"]:
         return True
     return False
 
@@ -324,10 +328,10 @@ def try3():
 def is_pronoun(word):
     return word in ["я", "ты", "он", "она", "вы", "мы", "этот", "тот", "они", "кто-то", "некто", "никто", "все", "это", "себя"]
 
+
 def add_to_graph4(sintax, graph):
     sintax_dict = dict()  # Номер: слово, ссылка
     sintax = sintax.split("\n")
-
     for word in sintax:  # Добавляем вершины
         if len(word) == 0 or word[0] == "#":
             continue
@@ -340,7 +344,6 @@ def add_to_graph4(sintax, graph):
         else:
             graph.add_node(word[2], size=1)
         sintax_dict[word[0]] = word[2], word[6]
-
     for word in sintax:  # Добавляем ребра
         if len(word) > 0 and word[0] != "#":
             word = word.replace("	", " ").split()
@@ -363,15 +366,18 @@ def try4():
     clf = train_logistic_regression(300, "person_train", const.person_list, const.non_person_list)
 
     path = r"test_books\slugi.zip"
+    path = r"test_books\1.zip"
+
     xml = bm.open_book(path)
     _xpath = etree.XPath(r'//*')
     dom = etree.XML(xml)
     ans = _xpath(dom)
 
-    for i in ans[570:590]:
+    for i in ans:
         """Обработка заголовков, автора и т.д. через i.text """
         if re.search(r"\b[p]", i.tag):  # предполагаю, что строки с текстом заканчиваются на p
-
+            if not i.text:
+                continue
             """ Построчная обработка книги перед предпроцессингом (Только текста) """
             sintax = get_sintax(i.text)
             add_to_graph4(sintax, G)
@@ -524,14 +530,32 @@ def try4():
             continue
         is_person = clf.predict(vec.reshape(1, -1))
         if is_person == 0:
+            test_v = tokenizer.get_stat_token_word(morph, "налогоплательщик")
+            test_vec = client.get_vec(test_v)
+            print(node, cosine(test_vec, vec))
+
             persons.append(node)
             per_vec.append(vec)
     print("persons = ", persons)
-    test_v = tokenizer.get_stat_token_word(morph, "рабство")
-    test_vec = 
+    print()
+    for i in persons:
+        print(i)
+    test_v = tokenizer.get_stat_token_word(morph, "налогоплательщик")
+    test_vec = client.get_vec(test_v)
+    s = 1
+    for vec in per_vec:
+        s *= cosine(test_vec, vec)
+        print(cosine(test_vec, vec))
+    s ** (1/len(persons))
+    print(s)
 
     for per in persons:
         print(per, G[per])
+    print()
+    for per in G["человек"]:
+        token_word = tokenizer.get_stat_token_word(morph, per)
+
+        print(token_word)
 
     node_color = [(G.degree(v))*3 for v in G]
     node_size = [400 * nx.get_node_attributes(G, 'size')[v] for v in G]
