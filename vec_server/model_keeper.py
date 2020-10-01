@@ -7,7 +7,7 @@ import json
 import numpy as np
 
 news_model = r"models\news_2019\model.txt"
-tayga_model = r"models\tayga_2019\model.txt"
+tayga_model = r"models\ruscorpora_upos_skipgram_300_5_201.vec"
 web_model = r"models\web_2019\web.bin"
 model = KeyVec.load_word2vec_format(tayga_model)  # C text format
 print("Модель загружена!")
