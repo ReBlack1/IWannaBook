@@ -5,6 +5,9 @@ import math
 import requests
 from lxml import html
 
+class BookNotFound(Exception):
+   pass
+
 def transliterate(name):
     slovar = {'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'e',
               'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n',
@@ -23,30 +26,44 @@ def transliterate(name):
         name = name.replace(key, slovar[key])
     return name
 
-#заменить на другой вариант. Формируем поисковую строку. Ищем точное соответствие. Если его не найдено, то выкинуть ошибку
 def get_html(author, book_name):
-    author = transliterate(author).lower()
-    book_name = transliterate(book_name).lower()
-    url = f'https://www.litres.ru/{author}/{book_name}/'
-    r = requests.get(url)
-    print(f'url: {url}')
-    #r = requests.get(f'https://www.litres.ru/evgeniy-zamyatin/my-russkaya-antiutopiya/').text
-    return r
+    book_new_name = book_name.replace(' ', '+')#название книги привели к нужному для поискового запроса формату
+    url = f'https://www.litres.ru/pages/rmd_search_arts/?q={book_new_name}'#сформировали url
+    r = requests.get(url)#получили html поисковой страницы
+    r = html.fromstring(r.content)
+    names_list = r.xpath('//div[@class="art-item__name"]/a')#вытащили все названия книг
+    authors_list = r.xpath('//div[@class="art-item__author"]/a')#вытащили всех авторов
+    for i in range(0, len(names_list)):#циклом прошли и сравнили название и автора с заддным
+        if (names_list[i].text == book_name) & (authors_list[i].text == author):
+            href = names_list[i].attrib['href']#у нужной книги получили ссылочку на нее
+            return requests.get(f'https://www.litres.ru{href}')#вернули нужный html
+    raise BookNotFound('BookNotFound')#если не найдено совпадений(книга не найдена по точному совпадению автора и названия), ошибка
 
 def get_rating(author, book_name):
     try:
         ht = get_html(author, book_name)
         ht = html.fromstring(ht.content)
-        rating = ht.xpath('//div[@class="rating-number bottomline-rating"]/text()')[0]
-        count = ht.xpath('//div[@class="votes-count bottomline-rating-count"]/text()')[0]
-        #g = ht.xpath('//div[@class="biblio_book_info"]/ul/li/a')
-        #найти ребенка span и дописать из него первую букву
-        #print(dir(g))
-    except IndexError as e:
+        rating = ht.xpath('//div[@class="rating-number bottomline-rating"]/text()')
+        count = ht.xpath('//div[@class="votes-count bottomline-rating-count"]/text()')
+        try:
+            if rating[0] != '0':
+                rating_reader  = rating[0]
+                count_reader = count[0]
+            else:
+                raise IndexError
+        except IndexError:
+            rating_reader = count_reader = None
+        try:
+            rating_lib = rating[1]
+            count_lib = count[1]
+        except IndexError:
+            rating_lib = count_lib = None
+    except BookNotFound as e:
         print(f'Информация о книге не найдена, {e}')
-        rating = count = None
-    slovar = {'reting': rating, 'count': count}
+        rating_reader = count_reader = rating_lib = count_lib = None
+    slovar = {'rating_reader': rating_reader, 'count_reader': count_reader, 'rating_lib': rating_lib, 'count_lib': count_lib}
     return slovar
+
 
 def compute_tf(text):
     tf_text = Counter(text)
@@ -111,18 +128,25 @@ def count_mats(text):
             #print(slovo)
     return count
 
-text = 'превысокомногорассмотрительствующий ' * 30000
+#text = 'превысокомногорассмотрительствующий ' * 30000
 #while True:
 #    x = input()
 #    if x:
 #        text += x + '\n'
 #    else:
 #        break
-start = time.time()
-print(count_mats(text))
-end = time.time()
-print(f'{end-start} секунд')
+#start = time.time()
+#print(count_mats(text))
+#end = time.time()
+#print(f'{end-start} секунд')
 
+print(get_rating('Рик Янси', '5-я волна'))
+print(get_rating('Рик Янси', '5я волна'))
+print(get_rating('Рик нси', '5-я волна'))
+print(get_rating('Александр Пушкин', 'Капитанская дочка'))
+print(get_rating('Лора Вандеркам', 'Школа Джульетты. История о победе над цейтнотом и выгоранием'))
+print(get_rating('Марина Тёмкина', 'Ненаглядные пособия (сборник)'))
+#print(get_rating('Рик Янси', '5-я волна'))
 
 #corpus = [['pasta', 'la', 'vista', 'baby', 'la', 'vista'],
 #['hasta', 'siempre', 'comandante', 'baby', 'la', 'siempre'],
