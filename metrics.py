@@ -43,27 +43,24 @@ def get_rating(author, book_name):
     try:
         ht = get_html(author, book_name)
         ht = html.fromstring(ht.content)
-        rating = ht.xpath('//div[@class="rating-number bottomline-rating"]/text()')
+        rating = ht.xpath('//div[@class="rating-number bottomline-rating"]/text()')#все оценки сразу
         count = ht.xpath('//div[@class="votes-count bottomline-rating-count"]/text()')
-        try:
-            if rating[0] != '0':
-                rating_reader  = rating[0]
-                count_reader = count[0]
-            else:
-                raise IndexError
-        except IndexError:
+        if rating[0] != '0': #оценки читателей есть
+            rating_reader  = rating[0]
+            count_reader = count[0]
+        else:#оценок читателей нет
             rating_reader = count_reader = None
-        try:
+        try:#если тут ничего нет, то оценки профи нет
             rating_lib = rating[1]
             count_lib = count[1]
         except IndexError:
             rating_lib = count_lib = None
-    except BookNotFound as e:
+    except BookNotFound as e:#исключение из функции get_html
         print(f'Информация о книге не найдена, {e}')
         rating_reader = count_reader = rating_lib = count_lib = None
+
     slovar = {'rating_reader': rating_reader, 'count_reader': count_reader, 'rating_lib': rating_lib, 'count_lib': count_lib}
     return slovar
-
 
 def compute_tf(text):
     tf_text = Counter(text)
