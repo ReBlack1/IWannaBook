@@ -44,7 +44,7 @@ def get_rating(author, book_name):
     ht = html.fromstring(ht.content)
     rating = ht.xpath('//div[@class="rating-number bottomline-rating"]/text()')#все оценки сразу
     count = ht.xpath('//div[@class="votes-count bottomline-rating-count"]/text()')
-    if rating[0] != '0': #оценки читателей есть
+    if rating and rating[0] != '0': #оценки читателей есть
         rating_reader  = rating[0]
         count_reader = count[0]
     else:#оценок читателей нет
@@ -153,6 +153,10 @@ except BookNotFound as e:
     print(e)
 try:
     print(get_rating('Марина Тёмкина', 'Ненаглядные пособия (сборник)'))
+except BookNotFound as e:
+    print(e)
+try:
+    print((get_rating('Кеннет Райт','Великолепная Лола')))
 except BookNotFound as e:
     print(e)
 
