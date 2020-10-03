@@ -40,25 +40,20 @@ def get_html(author, book_name):
     raise BookNotFound('BookNotFound')#если не найдено совпадений(книга не найдена по точному совпадению автора и названия), ошибка
 
 def get_rating(author, book_name):
-    try:
-        ht = get_html(author, book_name)
-        ht = html.fromstring(ht.content)
-        rating = ht.xpath('//div[@class="rating-number bottomline-rating"]/text()')#все оценки сразу
-        count = ht.xpath('//div[@class="votes-count bottomline-rating-count"]/text()')
-        if rating[0] != '0': #оценки читателей есть
-            rating_reader  = rating[0]
-            count_reader = count[0]
-        else:#оценок читателей нет
-            rating_reader = count_reader = None
-        try:#если тут ничего нет, то оценки профи нет
-            rating_lib = rating[1]
-            count_lib = count[1]
-        except IndexError:
-            rating_lib = count_lib = None
-    except BookNotFound as e:#исключение из функции get_html
-        print(f'Информация о книге не найдена, {e}')
-        rating_reader = count_reader = rating_lib = count_lib = None
-
+    ht = get_html(author, book_name)
+    ht = html.fromstring(ht.content)
+    rating = ht.xpath('//div[@class="rating-number bottomline-rating"]/text()')#все оценки сразу
+    count = ht.xpath('//div[@class="votes-count bottomline-rating-count"]/text()')
+    if rating[0] != '0': #оценки читателей есть
+        rating_reader  = rating[0]
+        count_reader = count[0]
+    else:#оценок читателей нет
+        rating_reader = count_reader = None
+    try:#если тут ничего нет, то оценки профи нет
+        rating_lib = rating[1]
+        count_lib = count[1]
+    except IndexError:
+        rating_lib = count_lib = None
     slovar = {'rating_reader': rating_reader, 'count_reader': count_reader, 'rating_lib': rating_lib, 'count_lib': count_lib}
     return slovar
 
@@ -136,13 +131,31 @@ def count_mats(text):
 #print(count_mats(text))
 #end = time.time()
 #print(f'{end-start} секунд')
+try:
+    print(get_rating('Рик Янси', '5-я волна'))
+except BookNotFound as e:
+    print(e)
+try:
+    print(get_rating('Рик Янси', '5я волна'))
+except BookNotFound as e:
+    print(e)
+try:
+    print(get_rating('Рик нси', '5-я волна'))
+except BookNotFound as e:
+    print(e)
+try:
+    print(get_rating('Александр Пушкин', 'Капитанская дочка'))
+except BookNotFound as e:
+    print(e)
+try:
+    print(get_rating('Лора Вандеркам', 'Школа Джульетты. История о победе над цейтнотом и выгоранием'))
+except BookNotFound as e:
+    print(e)
+try:
+    print(get_rating('Марина Тёмкина', 'Ненаглядные пособия (сборник)'))
+except BookNotFound as e:
+    print(e)
 
-print(get_rating('Рик Янси', '5-я волна'))
-print(get_rating('Рик Янси', '5я волна'))
-print(get_rating('Рик нси', '5-я волна'))
-print(get_rating('Александр Пушкин', 'Капитанская дочка'))
-print(get_rating('Лора Вандеркам', 'Школа Джульетты. История о победе над цейтнотом и выгоранием'))
-print(get_rating('Марина Тёмкина', 'Ненаглядные пособия (сборник)'))
 #print(get_rating('Рик Янси', '5-я волна'))
 
 #corpus = [['pasta', 'la', 'vista', 'baby', 'la', 'vista'],
