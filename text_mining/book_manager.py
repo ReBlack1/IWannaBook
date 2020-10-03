@@ -94,29 +94,3 @@ def get_status_of_flibusta_book_page(book_number, proxy=None):
     :return: number of state of book page
     """
     pass
-
-# st = time.time()
-# G = BL.compress_book(r"test_books\slugi.zip")
-# print("Время обработки = ", str(time.time() - st))
-#
-# with open(r"graph_models\slugi_graph.plk", 'wb') as f:
-#     pickle.dump(G, f)
-
-import asyncio
-from proxybroker import Broker
-
-
-
-
-# pr = Proxies()
-# print(pr)
-# pr.run_finding()
-# print(pr.get_new_proxy())
-# exit()
-# proxy = {"http": "http://" + str(pr[0].host) + ":" + str(pr[0].port)}
-# pr.pop(0)
-
-# proxy = {"HTTPS": r"https://SelReBlack1:K1g1GfI@5.44.45.207:45785"}
-
-
-
