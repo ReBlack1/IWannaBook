@@ -6,9 +6,6 @@ from lxml import etree
 import re
 from UDPipe_api import *
 import networkx as nx
-import client
-import pymorphy2
-import tokenizer
 from scipy.spatial.distance import *
 from training_manager import *
 morph = pymorphy2.MorphAnalyzer()
