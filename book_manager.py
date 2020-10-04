@@ -3,8 +3,7 @@
 import zipfile
 import requests
 from lxml import etree
-import time
-import pickle
+
 
 def open_fb2_book(path, code='UTF-8'):
     """

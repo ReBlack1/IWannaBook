@@ -4,7 +4,7 @@ from collections import Counter
 import math
 import requests
 from bs4 import BeautifulSoup
-
+from text_mining.book_manager import open_bytes_book_in_zip
 
 class BookNotFound(Exception):
     pass
@@ -13,29 +13,29 @@ class LitresParser:
     def __init__(self):
         pass
 
-    def get_all_books(book_name):
+    def get_all_books(self, book_name):
         book_new_name = book_name.replace(' ', '+')  # название книги привели к нужному для поискового запроса формату
         url = f'https://www.litres.ru/pages/rmd_search_arts/?q={book_new_name}'  # сформировали url
         r = requests.get(url).text  # получили html поисковой страницы
         soup = BeautifulSoup(r, 'lxml')
-        books = soup.find_all("div", {"class": "art-item search__item item__type_art"}) # получили информацию о всех книгах из поиска
+        books = soup.find_all("div", {"class": "art-item search__item item__type_art"})  # получили информацию о всех книгах из поиска
         return books
 
-    def get_book(books, author, book_name):
-        authors_list = [] # список авторов всех произведений. Если автор не указан, то значение ''
-        names_list = [] # список названий всех произведений
+    def get_book(self, books, author, book_name):
+        authors_list = []  # список авторов всех произведений. Если автор не указан, то значение ''
+        names_list = []  # список названий всех произведений
         for book in books:  # в цикле проходим по всем книгам и заполняем список авторов и названий
             authors_list.append(book.find_all('a')[-1])
             names_list.append(book.find_all('a')[1])
-        for i in range(0, len(names_list)): # в цикле идем по всем авторам и названиям, ищем точное совпадение названия и автора
+        for i in range(0, len(names_list)):  # в цикле идем по всем авторам и названиям, ищем точное совпадение названия и автора
             if (names_list[i].text == book_name) & (authors_list[i].text == author):
                 href = names_list[i].get('href')  # у нужной книги получили ссылочку на нее
                 return requests.get(f'https://www.litres.ru{href}').text  # вернули нужный html
         raise BookNotFound('BookNotFound')  # если не найдено совпадений(книга не найдена по точному совпадению автора и названия), ошибка
 
-    def get_rating(author, book_name):
-        html_all_books = LitresParser.get_all_books(book_name)  # получили информацию о всех книгах из поиска
-        html_book = LitresParser.get_book(html_all_books, author, book_name)    # получили информацию о конкретной книге
+    def get_rating(self, author, book_name):
+        html_all_books = self.get_all_books(book_name)  # получили информацию о всех книгах из поиска
+        html_book = self.get_book(html_all_books, author, book_name)    # получили информацию о конкретной книге
         soup = BeautifulSoup(html_book, 'lxml')
         rating = soup.find_all("div", {"class": "rating-number bottomline-rating"})  # все оценки сразу(в форме веб элемента)
         count = soup.find_all("div", {"class": "votes-count bottomline-rating-count"})
@@ -153,35 +153,40 @@ def count_mats(text):
 # end = time.time()
 # print(f'{end-start} секунд')
 try:
-    print(LitresParser.get_rating('Гусейн Аббасзаде', 'Просьба'))
+    litres = LitresParser()
+    print(litres.get_rating('Фридрих Шиллер', 'Разбойники'))
 except BookNotFound as e:
     print(e)
 try:
-    print(LitresParser.get_rating('Рик Янси', '5-я волна'))
+    print(litres.get_rating('Гусейн Аббасзаде', 'Просьба'))
 except BookNotFound as e:
     print(e)
 try:
-    print(LitresParser.get_rating('Рик Янси', '5я волна'))
+    print(litres.get_rating('Рик Янси', '5-я волна'))
 except BookNotFound as e:
     print(e)
 try:
-    print(LitresParser.get_rating('Рик нси', '5-я волна'))
+    print(litres.get_rating('Рик Янси', '5я волна'))
 except BookNotFound as e:
     print(e)
 try:
-    print(LitresParser.get_rating('Александр Пушкин', 'Капитанская дочка'))
+    print(litres.get_rating('Рик нси', '5-я волна'))
 except BookNotFound as e:
     print(e)
 try:
-    print(LitresParser.get_rating('Лора Вандеркам', 'Школа Джульетты. История о победе над цейтнотом и выгоранием'))
+    print(litres.get_rating('Александр Пушкин', 'Капитанская дочка'))
 except BookNotFound as e:
     print(e)
 try:
-    print(LitresParser.get_rating('Марина Тёмкина', 'Ненаглядные пособия (сборник)'))
+    print(litres.get_rating('Лора Вандеркам', 'Школа Джульетты. История о победе над цейтнотом и выгоранием'))
 except BookNotFound as e:
     print(e)
 try:
-    print(LitresParser.get_rating('Кеннет Райт','Великолепная Лола'))
+    print(litres.get_rating('Марина Тёмкина', 'Ненаглядные пособия (сборник)'))
+except BookNotFound as e:
+    print(e)
+try:
+    print(litres.get_rating('Кеннет Райт','Великолепная Лола'))
 except BookNotFound as e:
     print(e)
 
