@@ -6,7 +6,8 @@ from metrics import LitresParser, BookNotFound
 import zipfile
 from lxml import etree
 import re
-
+from udpipe import UDPipe
+import pickle
 
 def get_base_info_from_book_xml(book_xml):
     # TODO Перейти на нормальный парсинг xml
@@ -31,17 +32,40 @@ def get_base_info_from_book_xml(book_xml):
     return book_info
 
 
+def get_sintax_list(udpipe_obj, book_xml):
+    _xpath = etree.XPath(r'//*')
+    dom = etree.XML(book_xml)
+    ans = _xpath(dom)
+
+    sintax_list = []
+
+    for i in ans:
+        """Обработка заголовков, автора и т.д. через i.text """
+        if re.search(r"\b[p]", i.tag):  # предполагаю, что строки с текстом заканчиваются на p
+            if not i.text:
+                continue
+            """ Построчная обработка книги перед предпроцессингом (Только текста) """
+            sintax = udpipe_obj.get_sintax(i.text)
+            sintax_list.append(sintax)
+    return sintax_list
+
+
 if __name__ == '__main__':
-    for book_num in range(50497, 60000):
+    udpipe = UDPipe()
+    for book_num in range(0, 100000):
         book_path = r'E:\books\flibusta_' + str(book_num) + '.zip'
         try:
             book_xml = book_manager.open_book(book_path)
             book_info = get_base_info_from_book_xml(book_xml)
             print(book_num, book_info)
-            rating = LitresParser.get_rating(book_info['author_name'] + " " + book_info['author_second_name'],
-                                       book_info['title'])
-            print(rating)
-            break
+            # rating = LitresParser.get_rating(book_info['author_name'] + " " + book_info['author_second_name'],
+            #                            book_info['title'])
+            # print(rating)
+            sintax_list = get_sintax_list(udpipe, book_xml)
+            sintax_save_path = r"E:\sintax_lists\sintax_flibusta_" + str(book_num) + '.plc'
+            with open(sintax_save_path, 'wb') as f:
+                clf = pickle.dump(sintax_list, f)
+                print("Сохранено :) ")
         except zipfile.BadZipFile:
             # book = open(book_path, 'r', encoding='utf8')
             continue  # Там есть полезная инфа, но книги нет
@@ -50,8 +74,6 @@ if __name__ == '__main__':
         except IndexError as e:
             print("Ошибка в поиске")
             print(e.args)
-            exit()
-
         except etree.XMLSyntaxError:
             print("Ошибка в парсинге")
 
