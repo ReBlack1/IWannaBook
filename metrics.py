@@ -5,7 +5,7 @@ import math
 import requests
 from bs4 import BeautifulSoup
 from text_mining.book_manager import open_bytes_book_in_zip
-from proxy import get_proxy
+from proxy import get_proxy, unavailable_until
 
 class BookNotFound(Exception):
     pass
@@ -161,6 +161,7 @@ def count_mats(text):
 # print(f'{end-start} секунд')
 if __name__ == "__main__":
     pr = get_proxy(['https'])
+    unavailable_until(pr)
     print(pr)
     litres = LitresParser(pr)  # в параметрах передать прокси. Если параметров нет, то запрос происходит без прокси
     for i in range(50):
