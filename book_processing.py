@@ -5,8 +5,8 @@ from scipy.spatial.distance import cosine
 import pymorphy2
 morph = pymorphy2.MorphAnalyzer()
 from graph_manager import merge_nodes
-from word_manager import is_pronoun
-from math_manager import cache_cosine, my_metric
+from base_analys.word_manager import is_pronoun
+from math_manager import cache_cosine
 import client
 import tokenizer
 CS = cache_cosine()

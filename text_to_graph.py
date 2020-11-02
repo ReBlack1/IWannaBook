@@ -1,15 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import book_manager as bm
-from lxml import etree
 import re
-from UDPipe_api import *
+from language_tools.UDPipe_api import *
 import networkx as nx
 import client
 import pymorphy2
 import tokenizer
-from scipy.spatial.distance import *
 # from training_manager import *
 import math
 import pickle

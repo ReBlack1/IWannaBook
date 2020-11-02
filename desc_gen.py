@@ -4,7 +4,7 @@
 import book_manager as bm
 from lxml import etree
 import re
-import markovify
+
 
 def preprocess_text(text):
     """
@@ -44,7 +44,7 @@ def add_to_graph(sintax, graph):
 
 
 
-from UDPipe_api import *
+from language_tools.UDPipe_api import *
 import networkx as nx
 
 G = nx.MultiGraph()

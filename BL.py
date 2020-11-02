@@ -4,14 +4,14 @@ import text_to_graph
 import book_manager as bm
 from lxml import etree
 import re
-from UDPipe_api import *
+from language_tools.UDPipe_api import *
 import networkx as nx
 import math
 from graph_manager import add_to_graph, replace_edge
-from word_manager import is_pronoun, is_continue_word
+from base_analys.word_manager import is_pronoun, is_continue_word
 import time
 from book_processing import combine_synonims
-import udpipe
+from language_tools import udpipe
 import pickle
 import pymorphy2
 import tokenizer

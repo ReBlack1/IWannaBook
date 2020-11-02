@@ -1,11 +1,11 @@
 import downloader
 import time
 
-for i in range(76, 600):
+for i in range(134, 600):
     print("Скачано = ", i*1000)
 
     for number in range(1000):
-        if number + (1000*i) < 125829:
+        if number + (1000*i) < 151019:
             continue
         while 1:
             try:

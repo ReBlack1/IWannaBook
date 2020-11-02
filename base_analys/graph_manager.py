@@ -1,10 +1,9 @@
 import networkx as nx
-from word_manager import is_continue_word
+from base_analys.word_manager import is_continue_word
 
 
 def add_to_graph(sintax, graph):
     """
-
     :param sintax:
     Струтура синтаксиса:
     0 - Номер слова
