@@ -161,8 +161,8 @@ def count_mats(text):
 # print(f'{end-start} секунд')
 if __name__ == "__main__":
     pr = get_proxy(['https'])
-    unavailable_until(pr)
     print(pr)
+    print(unavailable_until(pr))
     litres = LitresParser(pr)  # в параметрах передать прокси. Если параметров нет, то запрос происходит без прокси
     for i in range(50):
         try:
