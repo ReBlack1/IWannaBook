@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
     for book_num in range(0, 50):
         raw_graph_save_path = config.raw_graph_path + r"\graph_flibusta_" + str(book_num) + '.plc'
-        compressed_graph_save_path = config.raw_graph_path + r"\tayga_commpressed_graph_flibusta_" + str(book_num) + '.plc'
+        compressed_graph_save_path = config.compressed_graph_path + r"\tayga_commpressed_graph_flibusta_" + str(book_num) + '.plc'
 
         try:
             with open(raw_graph_save_path, 'rb') as f:
