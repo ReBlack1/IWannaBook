@@ -11,6 +11,42 @@ import tokenizer
 import json
 import client
 from base_analys.graph_manager import combine_nodes
+import requests
+import numpy as np
+
+
+def get_vec(token_word):
+    data = json.dumps({"method": "get_vec", "params": [token_word]})
+    res = requests.post("http://127.0.0.1:9095/", data)
+    vec = np.frombuffer(res.content, dtype="float32")
+    return vec
+
+
+def get_word(vec):
+    vec_list = vec.tolist()
+    data = json.dumps({"method": "get_similar_word", "params": [vec_list]})
+    res = requests.post("http://127.0.0.1:9095/", data)
+    return json.loads(res.content)["res"]
+
+
+def merge_synonims(G, vec_list, word_list, threshold=0.5):
+    size = len(vec_list)
+    for base in range(size):  # Объединяем синонимы существительныз
+        for comp in range(base + 1, size):
+            if cosine(vec_list[base], vec_list[comp]) < threshold:  # Если слова - синонимы
+                old_name1 = noun_word_list[base]
+                old_name2 = noun_word_list[comp]
+                new_vec = (vec_list[base] + vec_list[comp]) / 2
+
+                new_name = get_word(new_vec)[0][0].split("_")[0]  # Первое слово, слово (Второе - близость), отрезаем токен
+                try:
+                    combine_nodes(old_name1, old_name2, new_name, G)
+                except KeyError:  # Слово уже было и его удалили
+                    continue
+                for word in range(len(word_list)):
+                    if word_list[word] in [old_name1, old_name2]:
+                        word_list[word] = new_name
+
 
 if __name__ == '__main__':
     morph = pymorphy2.MorphAnalyzer()
@@ -42,7 +78,7 @@ if __name__ == '__main__':
                 token_word = tokenizer.get_stat_token_word(morph, word)
                 if token_word is None:
                     continue
-                vec = client.get_vec(token_word)
+                vec = get_vec(token_word)
                 if len(vec) == 0:
                     continue
 
@@ -53,40 +89,11 @@ if __name__ == '__main__':
                     verb_word_list.append(word)
                     verb_vec_list.append(vec)
 
-            size = len(noun_vec_list)
-            for base in range(size):  # Объединяем синонимы существительныз
-                for comp in range(base + 1, size):
-                    if cosine(noun_vec_list[base], noun_vec_list[comp]) < 0.5:
-                        old_name1 = noun_word_list[base]
-                        old_name2 = noun_word_list[comp]
-                        if old_name1 == old_name2:
-                            continue
-                        new_vec = (noun_vec_list[base] + noun_vec_list[comp]) / 2
-                        res = json.loads(client.get_word_by_vec(new_vec.tostring()).decode())["res"][0]
-                        new_name = res[0].split("_")[0]
-                        combine_nodes(old_name1, old_name2, new_name, G)
-                        for word in range(len(noun_word_list)):
-                            if noun_word_list[word] in [old_name1, old_name2]:
-                                noun_word_list[word] = new_name
-
-            size = len(verb_vec_list)
-            for base in range(size):  # Объединяем синонимы глаголов
-                for comp in range(base + 1, size):
-                    if cosine(verb_vec_list[base], verb_vec_list[comp]) < 0.5:
-                        old_name1 = verb_word_list[base]
-                        old_name2 = verb_word_list[comp]
-                        if old_name1 == old_name2:
-                            continue
-                        new_vec = (verb_vec_list[base] + verb_vec_list[comp]) / 2
-                        res = json.loads(client.get_word_by_vec(new_vec.tostring()).decode())["res"][0]
-                        new_name = res[0].split("_")[0]
-                        combine_nodes(old_name1, old_name2, new_name, G)
-                        for word in range(len(verb_word_list)):
-                            if verb_word_list[word] in [old_name1, old_name2]:
-                                verb_word_list[word] = new_name
+            merge_synonims(G, noun_vec_list, noun_word_list)
+            merge_synonims(G, verb_vec_list, verb_word_list)
 
             with open(raw_graph_save_path, 'wb') as f:
                 pickle.dump(G, f)
             print("Граф номер {} сохранен :)".format(str(book_num)))
         except FileNotFoundError:
-            print("Синтаксис номер {} не найден".format(str(book_num)))
+            print("Граф номер {} не найден".format(str(book_num)))
