@@ -1,16 +1,18 @@
 import re
-import time
+import urllib3
 from collections import Counter
 import math
 import requests
 from bs4 import BeautifulSoup
 from text_mining.book_manager import open_bytes_book_in_zip
 from proxy import get_proxy, unavailable_until
+import  time
+
 
 class BookNotFound(Exception):
     pass
 
-class Capcha(Exception):
+class CaptchaException(Exception):
     pass
 
 class LitresParser:
@@ -23,7 +25,10 @@ class LitresParser:
     def get_all_books(self, book_name):
         book_new_name = book_name.replace(' ', '+')  # название книги привели к нужному для поискового запроса формату
         url = f'https://www.litres.ru/pages/rmd_search_arts/?q={book_new_name}'  # сформировали url
-        r = requests.get(url, proxies=self.proxies).text  # получили html поисковой страницы
+        r = requests.get(url, proxies=self.proxies, timeout=8).text  # получили html поисковой страницы
+        pos = r.find("Подтвердите, что вы не робот")
+        if pos != -1:
+            raise CaptchaException
         soup = BeautifulSoup(r, 'lxml')
         books = soup.find_all("div", {"class": "art-item search__item item__type_art"})  # получили информацию о всех книгах из поиска
         return books
@@ -37,11 +42,14 @@ class LitresParser:
         for i in range(0, len(names_list)):  # в цикле идем по всем авторам и названиям, ищем точное совпадение названия и автора
             if (names_list[i].text == book_name) & (authors_list[i].text == author):
                 href = names_list[i].get('href')  # у нужной книги получили ссылочку на нее
-                return requests.get(f'https://www.litres.ru{href}').text  # вернули нужный html
+                return requests.get(f'https://www.litres.ru{href}', proxies=self.proxies, timeout=8).text  # вернули нужный html
         raise BookNotFound('BookNotFound')  # если не найдено совпадений(книга не найдена по точному совпадению автора и названия), ошибка
 
     def get_rating(self, author, book_name):
-        html_all_books = self.get_all_books(book_name)  # получили информацию о всех книгах из поиска
+        try:
+            html_all_books = self.get_all_books(book_name)  # получили информацию о всех книгах из поиска
+        except CaptchaException:
+            raise CaptchaException
         html_book = self.get_book(html_all_books, author, book_name)    # получили информацию о конкретной книге
         soup = BeautifulSoup(html_book, 'lxml')
         rating = soup.find_all("div", {"class": "rating-number bottomline-rating"})  # все оценки сразу(в форме веб элемента)
@@ -147,6 +155,17 @@ def count_mats(text):
             # print(slovo)
     return count
 
+def create_new_proxy():
+    try:
+        proxy_https = get_proxy(['https'])['https'].split('://')
+        proxy_http = get_proxy(['http'])['http'].split('://')
+        proxies = {proxy_http[0]: proxy_http[1],
+                   proxy_https[0]: proxy_https[1]}
+        return proxies
+    except TypeError:
+        time.sleep(0.1)
+        create_new_proxy()
+
 
 # text = 'превысокомногорассмотрительствующий ' * 30000
 # while True:
@@ -160,49 +179,74 @@ def count_mats(text):
 # end = time.time()
 # print(f'{end-start} секунд')
 if __name__ == "__main__":
-    pr = get_proxy(['https'])
-    print(pr)
-    print(unavailable_until(pr))
-    litres = LitresParser(pr)  # в параметрах передать прокси. Если параметров нет, то запрос происходит без прокси
-    for i in range(50):
+    proxies = create_new_proxy()
+    litres = LitresParser(proxies)  # в параметрах передать прокси. Если параметров нет, то запрос происходит без прокси
+    # res = requests.get(url='https://be1.ru/my-ip/', proxies=proxies, verify=False).text
+    # print(res)
+    # res = requests.get(url='http://ru.smart-ip.net/', proxies=proxies, verify=False).text
+    # print(res)
+    for i in range(100):
+        print('--------', str(i), '--------')
         try:
             print(litres.get_rating('Фридрих Шиллер', 'Разбойники'))
         except BookNotFound as e:
             print(e)
-        except Capcha:
-            litres.set_proxy(get_proxy(['https']))  # в параметрах передать новый прокси
-        try:
-            print(litres.get_rating('Гусейн Аббасзаде', 'Просьба'))
-        except BookNotFound as e:
-            print(e)
+        except CaptchaException:
+            print('Капча.', 'Меняем прокси на новый')
+            proxies = create_new_proxy()
+            litres.set_proxy(proxies)
+        except requests.exceptions.ConnectionError:
+            print('Не получили доступ к сайту.', 'Меняем прокси на новый')
+            proxies = create_new_proxy()
+            litres.set_proxy(proxies)
         try:
             print(litres.get_rating('Рик Янси', '5-я волна'))
         except BookNotFound as e:
             print(e)
-        try:
-            print(litres.get_rating('Рик Янси', '5я волна'))
-        except BookNotFound as e:
-            print(e)
-        try:
-            print(litres.get_rating('Рик нси', '5-я волна'))
-        except BookNotFound as e:
-            print(e)
+        except CaptchaException:
+            print('Капча.', 'Меняем прокси на новый')
+            proxies = create_new_proxy()
+            litres.set_proxy(proxies)
+        except requests.exceptions.ConnectionError:
+            print('Не получили доступ к сайту.', 'Меняем прокси на новый')
+            proxies = create_new_proxy()
+            litres.set_proxy(proxies)
         try:
             print(litres.get_rating('Александр Пушкин', 'Капитанская дочка'))
         except BookNotFound as e:
             print(e)
+        except CaptchaException:
+            print('Капча.', 'Меняем прокси на новый')
+            proxies = create_new_proxy()
+            litres.set_proxy(proxies)
+        except requests.exceptions.ConnectionError:
+            print('Не получили доступ к сайту.', 'Меняем прокси на новый')
+            proxies = create_new_proxy()
+            litres.set_proxy(proxies)
         try:
             print(litres.get_rating('Лора Вандеркам', 'Школа Джульетты. История о победе над цейтнотом и выгоранием'))
         except BookNotFound as e:
             print(e)
+        except CaptchaException:
+            print('Капча.', 'Меняем прокси на новый')
+            proxies = create_new_proxy()
+            litres.set_proxy(proxies)
+        except requests.exceptions.ConnectionError:
+            print('Не получили доступ к сайту.', 'Меняем прокси на новый')
+            proxies = create_new_proxy()
+            litres.set_proxy(proxies)
         try:
             print(litres.get_rating('Марина Тёмкина', 'Ненаглядные пособия (сборник)'))
         except BookNotFound as e:
             print(e)
-        try:
-            print(litres.get_rating('Кеннет Райт','Великолепная Лола'))
-        except BookNotFound as e:
-            print(e)
+        except CaptchaException:
+            print('Капча.', 'Меняем прокси на новый')
+            proxies = create_new_proxy()
+            litres.set_proxy(proxies)
+        except requests.exceptions.ConnectionError:
+            print('Не получили доступ к сайту.', 'Меняем прокси на новый')
+            proxies = create_new_proxy()
+            litres.set_proxy(proxies)
 
 # print(get_rating('Рик Янси', '5-я волна'))
 
