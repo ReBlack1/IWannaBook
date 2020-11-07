@@ -34,8 +34,8 @@ def merge_synonims(G, vec_list, word_list, threshold=0.5):
     for base in range(size):  # Объединяем синонимы существительныз
         for comp in range(base + 1, size):
             if cosine(vec_list[base], vec_list[comp]) < threshold:  # Если слова - синонимы
-                old_name1 = noun_word_list[base]
-                old_name2 = noun_word_list[comp]
+                old_name1 = word_list[base]
+                old_name2 = word_list[comp]
                 new_vec = (vec_list[base] + vec_list[comp]) / 2
 
                 new_name = get_word(new_vec)[0][0].split("_")[0]  # Первое слово, слово (Второе - близость), отрезаем токен
@@ -92,7 +92,7 @@ if __name__ == '__main__':
             merge_synonims(G, noun_vec_list, noun_word_list)
             merge_synonims(G, verb_vec_list, verb_word_list)
 
-            with open(raw_graph_save_path, 'wb') as f:
+            with open(compressed_graph_save_path, 'wb') as f:
                 pickle.dump(G, f)
             print("Граф номер {} сохранен :)".format(str(book_num)))
         except FileNotFoundError:
