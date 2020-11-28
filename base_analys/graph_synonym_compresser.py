@@ -18,6 +18,8 @@ import numpy as np
 def get_vec(token_word):
     data = json.dumps({"method": "get_vec", "params": [token_word]})
     res = requests.post("http://127.0.0.1:9095/", data)
+    if not res:
+        return None
     vec = np.frombuffer(res.content, dtype="float32")
     return vec
 
@@ -31,11 +33,13 @@ def get_word(vec):
 
 def merge_synonims(G, vec_list, word_list, threshold=0.5):
     size = len(vec_list)
+    if size < 2:
+        return
     for base in range(size):  # Объединяем синонимы существительныз
         for comp in range(base + 1, size):
             if cosine(vec_list[base], vec_list[comp]) < threshold:  # Если слова - синонимы
-                old_name1 = noun_word_list[base]
-                old_name2 = noun_word_list[comp]
+                old_name1 = word_list[base]
+                old_name2 = word_list[comp]
                 new_vec = (vec_list[base] + vec_list[comp]) / 2
 
                 new_name = get_word(new_vec)[0][0].split("_")[0]  # Первое слово, слово (Второе - близость), отрезаем токен
@@ -51,7 +55,7 @@ def merge_synonims(G, vec_list, word_list, threshold=0.5):
 if __name__ == '__main__':
     morph = pymorphy2.MorphAnalyzer()
 
-    for book_num in range(0, 50):
+    for book_num in range(42527, 44000):
         raw_graph_save_path = config.raw_graph_path + r"\graph_flibusta_" + str(book_num) + '.plc'
         compressed_graph_save_path = config.compressed_graph_path + r"\tayga_commpressed_graph_flibusta_" + str(book_num) + '.plc'
 
@@ -79,7 +83,7 @@ if __name__ == '__main__':
                 if token_word is None:
                     continue
                 vec = get_vec(token_word)
-                if len(vec) == 0:
+                if vec is None or len(vec) == 0:
                     continue
 
                 if token_word.find("NOUN") != -1:  # Пока объединим только существительные
@@ -92,7 +96,7 @@ if __name__ == '__main__':
             merge_synonims(G, noun_vec_list, noun_word_list)
             merge_synonims(G, verb_vec_list, verb_word_list)
 
-            with open(raw_graph_save_path, 'wb') as f:
+            with open(compressed_graph_save_path, 'wb') as f:
                 pickle.dump(G, f)
             print("Граф номер {} сохранен :)".format(str(book_num)))
         except FileNotFoundError:
