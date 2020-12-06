@@ -27,12 +27,15 @@ def get_sintax_list_with_navec(syntax_parser, book_xml):
     for i in ans:
         """Обработка заголовков, автора и т.д. через i.text """
         if re.search(r"\b[p]", i.tag):  # предполагаю, что строки с текстом заканчиваются на p
-            if not i.text:
+            if not i.text:  # Могут быть None
                 continue
-            """ Построчная обработка книги перед предпроцессингом (Только текста) """
-            tokens = [_.text for _ in tokenize(i.text)]
-            if tokens:
-                chunk.append(tokens)
+            for sentence in i.text.split("."):
+                """ Построчная обработка книги перед предпроцессингом (Только текста) """
+                if not sentence:
+                    continue
+                tokens = [_.text for _ in tokenize(sentence)]
+                if tokens:
+                    chunk.append(tokens)
     syntax_map = syntax_parser.map(chunk)
 
     for markup in syntax_map:
@@ -54,7 +57,7 @@ if __name__ == '__main__':
     syntax_parser = Syntax.load('slovnet_syntax_news_v1.tar')
     syntax_parser.navec(navec)
 
-    for book_num in range(70162, 160000):
+    for book_num in range(76400, 160000):
         book_path = config.raw_book_path + r'\flibusta_' + str(book_num) + '.zip'
         optimized_sintax_path = config.optimized_sintax_path + r'\opt_sinx_' + str(book_num) + '.zip'
         try:
