@@ -3,6 +3,7 @@
 from razdel import sentenize, tokenize
 from navec import Navec
 from slovnet import Syntax
+from ipymarkup import show_dep_ascii_markup as show_markup  # Для красивого вывода синтаксиса
 
 class SintaxisNavec:
     def __init__(self):
@@ -29,4 +30,9 @@ class SintaxisNavec:
                     deps.append([source, target, token.rel])
             sintax_list.append((words, deps))
 
-        return sintax_list
+        return sintax_list[0]
+
+
+# SN = SintaxisNavec()
+# sintax = SN.get_sintaxis("Кем бы ты ни был, кем бы ты не стал, помни, где ты был и кем ты стал.")
+# show_markup(sintax[0], sintax[1])
