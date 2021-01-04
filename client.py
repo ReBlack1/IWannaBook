@@ -5,7 +5,7 @@ import socket
 import json
 import numpy as np
 import re
-import pymorphy2
+import requests
 
 def preprocess_text(text):
     """
@@ -24,9 +24,13 @@ def preprocess_text(text):
     return text.strip()
 
 
-def get_vec(word, serv_host='localhost', serv_port=9090, resp_len=2048):
-    return np.frombuffer(get_str_vec(word, serv_host=serv_host, serv_port=serv_port, resp_len=resp_len), dtype="float32")
-
+def get_vec(token_word):
+    data = json.dumps({"method": "get_vec", "params": [token_word]})
+    res = requests.post("http://127.0.0.1:9095/", data)
+    if not res:
+        return None
+    vec = np.frombuffer(res.content, dtype="float32")
+    return vec
 
 def get_str_vec(word, serv_host='localhost', serv_port=9090, resp_len=2048):
     sock = socket.socket()

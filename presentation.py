@@ -556,7 +556,6 @@ def try4():
 
     node_color = [(G.degree(v))*3 for v in G]
     node_size = [400 * nx.get_node_attributes(G, 'size')[v] for v in G]
-     #print(nx.get_node_attributes(G, 'size'))
     nx.draw(G, nlist=[G.nodes], with_labels=True, node_color=node_color, font_color="k", node_size=node_size)
     plt.show()
 
