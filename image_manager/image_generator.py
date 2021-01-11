@@ -27,39 +27,30 @@ def find_count_signs(text):
     return len(re.findall("[{}.,-<>\";:!?[\]\\\/]", text))
 
 
-def find_q_all_nsubj(sintaxis):
+def get_nsubj_list(sintaxis):
     q_all_nsubj = []
-    for i in sintaxis[1]:
-        if i[2] == "nsubj":
-            q_all_nsubj.append(i)
+    for syntactic_links in sintaxis[1]:
+        if syntactic_links[2] == "nsubj":
+            q_all_nsubj.append(syntactic_links)
     return q_all_nsubj
 
 def find_dif(cur_text):
     cur_min = 200
     cur_max = 0
-    for i in cur_text:
-        if (len(i) < cur_min):
+    for syntactic_links in cur_text:
+        if (len(syntactic_links) < cur_min):
             cur_min = len(i)
-        if (len(i) > cur_max):
+        if (len(syntactic_links) > cur_max):
             cur_max = len(i)
-    dif = cur_min * 100.0 / cur_max
+    dif = cur_min / cur_max * 100
     return dif
 
 
-def find_type_alignment_vertical_type(dif, count_lines):
+def find_alignment_vertical_type(dif, count_lines):
     if count_lines > 2 and dif < DIFFERENCE_LENGTHS:
         return "uniform"
     return "centre"
 
-def func(test_text, margin):
-    img = np.zeros((H, W, 3), np.uint8)
-    img[:, :, :] = 0
-    im = Image.fromarray(img)
-    draw = ImageDraw.Draw(im)
-    font_size = find_font_size(test_text, '14539.ttf', im.width - margin[0] - margin[2],
-                               im.height - margin[1] - margin[3])
-    font = ImageFont.truetype('14539.ttf', size=font_size)
-    return im, draw, font, font_size
 
 def add_text_to_photo(draw, alignment_vertical_type, alignment_horizontal_type, margin, drop_text, font_size, font):
     """
@@ -127,27 +118,26 @@ def split_text(text, count_lines, q_all_nsubj, count_signs):
                 splited[current_rating].append(current_split)
         return splited
     if count_lines == 3:
-        for i in range(1, len(splited_text) - 2):
+        for i in range(1, len(splited_text) - 1):
             for j in range(i + 1, len(splited_text)):
                 current_split = [splited_text[:i], splited_text[i:j], splited_text[j:]]
                 current_rating = splitting_rating(current_split, q_all_nsubj, count_signs)
                 try:
                     splited[current_rating].append(current_split)
                 except BaseException:
-                    splited[current_rating] = []
-                    splited[current_rating].append(current_split)
+                    splited[current_rating] = [current_split]
         return splited
     if count_lines == 4:
-        for i in range(1, len(splited_text) - 3):
-            for j in range(i + 1, len(splited_text) - 1):
+        for i in range(1, len(splited_text) - 2):
+            for j in range(i + 1, len(splited_text)):
                 for k in range(j + 1, len(splited_text)):
                     current_split = [splited_text[:i], splited_text[i:j], splited_text[j:k], splited_text[k:]]
+                    print(current_split)
                     current_rating = splitting_rating(current_split, q_all_nsubj, count_signs)
                     try:
                         splited[current_rating].append(current_split)
                     except BaseException:
-                        splited[current_rating] = []
-                        splited[current_rating].append(current_split)
+                        splited[current_rating] = [current_split]
         return splited
 
 
@@ -167,18 +157,18 @@ def splitting_rating(split, q_all_nsubj, count_signs):
     return (q_inside_nsubj + count_signs_at_end) / (len(q_all_nsubj) + count_signs)
 
 
-def filter(splitted_text):
-    delete = []
+def exclude_bad_phrases(splitted_text):
+    delete_list = []
     for text in splitted_text:
         # for j in range(0, len(text)):
         for j in range(0, len(text) - 1):
             if len(text[j]) < len(text[j + 1]) or len(text[j]) == 1 or len(text[j + 1]) == 1:
                 #    if len(text[j]) == 1:
-                delete.append(text)
+                delete_list.append(text)
                 break
-    if len(delete) == len(splitted_text):
+    if len(delete_list) == len(splitted_text):
         return None
-    for i in delete:
+    for i in delete_list:
         splitted_text.remove(i)
     return splitted_text
 
@@ -225,20 +215,21 @@ def position_rating(draw, alignment_vertical_type, alignment_horizontal_type, ma
 def put_text_pil(params):
     sint_maker = SintaxisNavec()
     text = params["text"]
+    font = params["font"]
     count_lines = params["count_lines"]
-    way_to_img = params["way_to_img"]
+    img_path = params["img_path"]
     margin = params["margin"]
     alignment_horizontal_type = params["alignment_horizontal_type"]
 
     sintaxis = sint_maker.get_sintaxis(text)
     count_signs = find_count_signs(text)
-    q_all_nsubj = find_q_all_nsubj(sintaxis)
+    q_all_nsubj = get_nsubj_list(sintaxis)
     splitted_text = split_text(text, count_lines, q_all_nsubj, count_signs)
 
     list_keys = list(splitted_text.keys())
     list_keys.sort(reverse=True)
     for cur_rating in list_keys:
-        drop_text = filter(splitted_text[cur_rating])
+        drop_text = exclude_bad_phrases(splitted_text[cur_rating])
         if drop_text is None:
             continue
         spl_rating = cur_rating
@@ -257,13 +248,14 @@ def put_text_pil(params):
         img[:, :, :] = 0
         im = Image.fromarray(img)
         draw = ImageDraw.Draw(im)
-        font_size = find_font_size(test_text, '14539.ttf', im.width - margin[0] - margin[2],
+        font = params["font"]
+        font_size = find_font_size(test_text, font, im.width - margin[0] - margin[2],
                                    im.height - margin[1] - margin[3])
-        font = ImageFont.truetype('14539.ttf', size=font_size)
+        font = ImageFont.truetype(font, size=font_size)
         # Подсчет процентного соотношения самой длинной и самой короткой строк
         dif = find_dif(cur_text)
         # Выбор типа вертикального выравнивания
-        alignment_vertical_type = find_type_alignment_vertical_type(dif, count_lines)
+        alignment_vertical_type = find_alignment_vertical_type(dif, count_lines)
         try:
             pos_rating, qsh = position_rating(draw, alignment_vertical_type, alignment_horizontal_type, margin,
                                               cur_text,
@@ -286,7 +278,7 @@ def put_text_pil(params):
     print("-----------------------\n\n")
 
 
-    im = Image.open(way_to_img)
+    im = Image.open(img_path)
     draw = ImageDraw.Draw(im)
     add_text_to_photo(draw, alignment_vertical_type, alignment_horizontal_type, margin, best_split, font_size, font)
     im.save(f"final_img{count_lines}.png", "png")  # Сохраняет лучшую картинку
@@ -313,9 +305,10 @@ for i in wolf_idea:
 
 # start = time.time()
 img = np.zeros((H, W, 3), np.uint8)  # или cv2.imread("path_to_file")
-way_to_img = "fon.jpg"
+img_path = "fon.jpg"
+font = "14539.ttf"
 params = {"text": "Кем бы ты ни был, кем бы ты не стал, помни, где ты был и кем ты стал.",
-          "way_to_img": way_to_img, "margin": (20, 20, 20, 20), "alignment_horizontal_type": (1, 1, 1, 1)}
+          "img_path": img_path, "font": font, "margin": (20, 20, 20, 20), "alignment_horizontal_type": (1, 1, 1, 1)}
 for count_line in range(1, 5):
     try:
         print("Длина разбиения: ", str(count_line))
