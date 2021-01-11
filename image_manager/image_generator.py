@@ -2,7 +2,7 @@ import PIL
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 import cv2
-from IWannaBook.text_mining.sintaxis import SintaxisNavec
+from text_mining.sintaxis import SintaxisNavec
 import re
 from guppy import hpy
 import time
@@ -226,7 +226,7 @@ def put_text_pil(params):
     sint_maker = SintaxisNavec()
     text = params["text"]
     count_lines = params["count_lines"]
-    img = params["way_to_img"]
+    way_to_img = params["way_to_img"]
     margin = params["margin"]
     alignment_horizontal_type = params["alignment_horizontal_type"]
 
@@ -245,13 +245,21 @@ def put_text_pil(params):
         break
     spl_rating = spl_rating * count_lines
     drop_text = merge_str(drop_text)  # Лучшие разбивки по смыслу
-
+    print("Лучшие разбиения(по смыслу):")
+    print(drop_text)
 
     best_pos_rating = -1
     best_split = ""
     for cur_text in drop_text:
         test_text = "\n".join(cur_text)
-        im, draw, font, font_size = func(test_text, margin)
+        #im, draw, font, font_size = func(test_text, margin)
+        img = np.zeros((H, W, 3), np.uint8)
+        img[:, :, :] = 0
+        im = Image.fromarray(img)
+        draw = ImageDraw.Draw(im)
+        font_size = find_font_size(test_text, '14539.ttf', im.width - margin[0] - margin[2],
+                                   im.height - margin[1] - margin[3])
+        font = ImageFont.truetype('14539.ttf', size=font_size)
         # Подсчет процентного соотношения самой длинной и самой короткой строк
         dif = find_dif(cur_text)
         # Выбор типа вертикального выравнивания
@@ -262,16 +270,21 @@ def put_text_pil(params):
                                               font_size, font)
         except BaseException as err:
             raise BaseException(err)
+
         im.save(f"test_img{count_lines, font_size}.png", "png")  # Сохраняет все созданные картинки
+
         pos_rating = pos_rating * count_lines
-        print(pos_rating, font_size, cur_text)
         if pos_rating > best_pos_rating:
             best_pos_rating = pos_rating
             best_split = cur_text
 
-    print("Рейтинг позиционирования:", str(best_pos_rating))
+    print("-----------------------")
+    print("Лучшее разбиение: ", best_split)
     print("Рейтинг разбиения:", str(spl_rating))
+    print("Рейтинг позиционирования:", str(best_pos_rating))
     print("Отношение максимальной высоты к максимальной длине:", str(qsh))
+    print("-----------------------\n\n")
+
 
     im = Image.open(way_to_img)
     draw = ImageDraw.Draw(im)
@@ -279,7 +292,6 @@ def put_text_pil(params):
     im.save(f"final_img{count_lines}.png", "png")  # Сохраняет лучшую картинку
 
     img = np.asarray(im)
-
     return img
 
 
@@ -302,10 +314,11 @@ for i in wolf_idea:
 # start = time.time()
 img = np.zeros((H, W, 3), np.uint8)  # или cv2.imread("path_to_file")
 way_to_img = "fon.jpg"
-params = {"text": "За двумя зайцами погонишься — рыбку из пруда не выловишь, делу время, а отмеришь семь раз.",
+params = {"text": "Кем бы ты ни был, кем бы ты не стал, помни, где ты был и кем ты стал.",
           "way_to_img": way_to_img, "margin": (20, 20, 20, 20), "alignment_horizontal_type": (1, 1, 1, 1)}
 for count_line in range(1, 5):
     try:
+        print("Длина разбиения: ", str(count_line))
         params['count_lines'] = count_line
         img = put_text_pil(params)
     except BaseException as err:
