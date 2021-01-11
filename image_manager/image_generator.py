@@ -256,17 +256,11 @@ def put_text_pil(params):
         dif = find_dif(cur_text)
         # Выбор типа вертикального выравнивания
         alignment_vertical_type = find_type_alignment_vertical_type(dif, count_lines)
-
-        while font_size > 1:
-            try:
-                pos_rating, qsh = position_rating(draw, alignment_vertical_type, alignment_horizontal_type, margin,
-                                                  cur_text,
-                                                  font_size, font)
-                break
-            except BaseException as err:
-                font_size = font_size - 1
-                continue
-        if font_size <= 1:
+        try:
+            pos_rating, qsh = position_rating(draw, alignment_vertical_type, alignment_horizontal_type, margin,
+                                              cur_text,
+                                              font_size, font)
+        except BaseException as err:
             raise BaseException(err)
         im.save(f"test_img{count_lines, font_size}.png", "png")  # Сохраняет все созданные картинки
         pos_rating = pos_rating * count_lines
