@@ -4,7 +4,7 @@ from gensim.models import KeyedVectors as KeyVec
 from sklearn.linear_model import LogisticRegression
 import numpy as np
 import pickle
-import client
+import web_client.service_connector as client
 import json
 from text_analys.mining import tokenizer
 import pymorphy2
