@@ -2,7 +2,7 @@ import PIL
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 import cv2
-from IWannaBook.text_mining.sintaxis import SintaxisNavec
+from text_mining.sintaxis import SintaxisNavec
 import re
 from guppy import hpy
 import time
@@ -10,7 +10,7 @@ import time
 DIFFERENCE_LENGTHS = 60
 W = 512
 H = 256
-STANDARD_FONT_SIZE = 16
+STANDARD_FONT_SIZE = 22
 
 
 def find_font_size(test_text, font_path, x_win, y_win):
@@ -30,20 +30,20 @@ def find_count_signs(text):
 
 def get_nsubj_list(sintaxis):
     q_all_nsubj = []
-    for syntactic_links in sintaxis[1]:
-        if syntactic_links[2] == "nsubj":
-            q_all_nsubj.append(syntactic_links)
+    for sintaxis_links in sintaxis[1]:
+        if sintaxis_links[2] == "nsubj":
+            q_all_nsubj.append(sintaxis_links)
     return q_all_nsubj
 
 
 def find_dif(cur_text):
     cur_min = 200
     cur_max = 0
-    for syntactic_links in cur_text:
-        if (len(syntactic_links) < cur_min):
-            cur_min = len(syntactic_links)
-        if (len(syntactic_links) > cur_max):
-            cur_max = len(syntactic_links)
+    for sintaxis_links in cur_text:
+        if (len(sintaxis_links) < cur_min):
+            cur_min = len(sintaxis_links)
+        if (len(sintaxis_links) > cur_max):
+            cur_max = len(sintaxis_links)
     dif = cur_min / cur_max * 100
     return dif
 
@@ -66,10 +66,10 @@ def add_text_to_photo(img, draw, alignment_vertical_type, alignment_horizontal_t
     :return:
     """
     location = []
-    try:
-        w, h = font.getsize_multiline(drop_text[0])
-    except IndexError:
-        return None
+    #try:
+    w, h = font.getsize_multiline(drop_text[0])
+    #except IndexError:
+    #    return None
     if alignment_vertical_type == "uniform":  # вертикальное заполнение - равномерно распределенный текст
         vertical_indent = (img.shape[0] - h * len(drop_text) - margin[1] - margin[3]) / len(
             drop_text) + 1  # Рассчитываем отступ по вертикали
@@ -224,7 +224,7 @@ def position_rating(img, draw, alignment_vertical_type, alignment_horizontal_typ
 
 
 def put_text_pil(params):
-    sint_maker = SintaxisNavec()
+    sint_maker = params["sint_maker"]
     text = params["text"]
     font = params["font"]
     count_lines = params["count_lines"]
@@ -317,7 +317,8 @@ def text_on_picture(text, img_path=None, font="14539.ttf", margin=(20, 20, 20, 2
     font_size_list = []
     # img = np.zeros((H, W, 3), np.uint8)
     # img_path = "fon.jpg"
-    params = {"text": text, "font": font, "img_path": img_path,
+    sint_maker = SintaxisNavec()
+    params = {"text": text, "sint_maker": sint_maker, "font": font, "img_path": img_path,
               "margin": margin, "alignment_horizontal_type": alignment_horizontal_type}
     for count_line in range(1, 5):
         print("Длина разбиения: ", str(count_line))
@@ -343,14 +344,14 @@ wolf_idea = [
 ]
 
 if __name__ == '__main__':
-    # start = time.time()
-    text = "Даже если нет шансов, всегда есть шанс."
+    start = time.time()
+    text = "Кем бы ты ни был, кем бы ты не стал, помни, где ты был и кем ты стал."
     best_img = text_on_picture(text)
     best_img.save("BEST.png", "png")
     # best_img = np.asarray(best_img)
     # cv2.imshow('Result', best_img)
     # h = hpy()
-    # end = time.time()
-    # print(end - start)
+    end = time.time()
+    print(end - start)
     # print(h.heap())
     # cv2.waitKey()
