@@ -5,9 +5,9 @@ import pickle
 import web_client.service_connector as client
 
 
-class PersonClassifier:
+class CruelClassifier:
     def __init__(self):
-        with open(r'D:\Python\IWannaBook\text_analys\classifiers\person_train.plc', 'rb') as f:
+        with open(r'D:\Python\IWannaBook\text_analys\classifiers\cruel_train.plc', 'rb') as f:
             self.person_classifier = pickle.load(f)
 
     def get_classifier_by_token(self, token):

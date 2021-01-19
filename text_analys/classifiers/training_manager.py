@@ -18,10 +18,9 @@ def get_vector_from_model(model, word):
         return None
 
 
-def create_word2vec_clf_dicts(word2vec_model_path, word_lists, vec_dict_path_name, class_dict_path_name):
+def create_word2vec_clf_dicts(word_lists, vec_dict_path_name, class_dict_path_name):
     """
-    :param word2vec_model_path: Путь к модели откуда берем вектора
-    :patam word_lists: список списков, [[а,b,c], [d,e,f], [g,h,i]] - 3 класса
+    :param word_lists: список списков, [[а,b,c], [d,e,f], [g,h,i]] - 3 класса
     Предполагается, что слова уже размечены по типу
     :param vec_dict_path_name: Путь, куда сохраняем словарь векторов (заканчивается на .plc или .pickle)
     :param class_dict_path_name:
@@ -29,14 +28,15 @@ def create_word2vec_clf_dicts(word2vec_model_path, word_lists, vec_dict_path_nam
     а так же сохраняет словари в pickle формате
     """
     print("Начата загрузка модели в память")
-    model = KeyVec.load_word2vec_format(word2vec_model_path)  # C text format
+    #model = KeyVec.load_word2vec_format(word2vec_model_path)  # C text format
 
     vector_dict = dict()
     class_dict = dict()
 
     for i in range(len(word_lists)):  # Проходка по классам
         for word in word_lists[i]:  # проходим по словам из одного класса
-            vec = get_vector_from_model(model, word)  # получаем вектор слова (Слово должно иметь _TYPE)
+            vec = client.get_vec(word)
+            #vec = get_vector_from_model(model, word)  # получаем вектор слова (Слово должно иметь _TYPE)
             if vec is not None:  # если слова нет в модели - возвращается None
                 vector_dict[word] = vec  # сохраняем вектор в словарь векторов
                 class_dict[word] = i  # i - номер класса по условию функции
