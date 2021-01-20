@@ -14,7 +14,7 @@ class LogisticClassifier    :
         vec = client.get_vec(token).reshape((1, -1))
         if vec.size == 0:
             return None
-        return self.classifier.predict(vec) == [1]
+        return self.classifier.predict(vec).tostring().decode()
 
 
 class PersonClassifier(LogisticClassifier):

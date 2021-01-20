@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- mode: python; coding: utf-8; -*-
 from gensim.models import KeyedVectors as KeyVec
+from text_analys.mining.tokenizer import Tokenizator
 from sklearn.linear_model import LogisticRegression
 import numpy as np
 import pickle
@@ -19,16 +20,24 @@ def get_vector_from_model(model, word):
 
 
 def train_w2v_logistic_regression(word_lists, clf_path_name):
+    tok = Tokenizator()
     X = np.array([], float)  # Пустой список векторов признаков
-    Y = np.array([], int)  # ПУстой список классов
+    Y = np.array([], str)  # Пустой список классов
     len_vec = None
     for i in range(len(word_lists)):  # Проходка по классам
         for word in word_lists[i]:  # проходим по словам из одного класса
-            vec = client.get_vec(word)
+            token = tok.get_stat_token_word(word)
+            if not token:
+                continue
+            vec = client.get_vec(token)
             if vec is not None:
                 len_vec = len(vec)
                 X = np.append(X, vec)  # Формирование списка векторов признаков
-                Y = np.append(Y, i)  # Формирование списка классов
+                if i == 0:
+                    type_class = "Bad"
+                else:
+                    type_class = "Good"
+                Y = np.append(Y, type_class)  # Формирование списка классов
 
     X = X.reshape((-1, len_vec))  # Необходимо для классификатора
 
