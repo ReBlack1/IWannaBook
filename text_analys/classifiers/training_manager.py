@@ -18,54 +18,21 @@ def get_vector_from_model(model, word):
         return None
 
 
-def create_word2vec_clf_dicts(word_lists, vec_dict_path_name, class_dict_path_name):
-    """
-    :param word_lists: список списков, [[а,b,c], [d,e,f], [g,h,i]] - 3 класса
-    Предполагается, что слова уже размечены по типу
-    :param vec_dict_path_name: Путь, куда сохраняем словарь векторов (заканчивается на .plc или .pickle)
-    :param class_dict_path_name:
-    :return: словарь слово:вектор из word2vec и словарь слово:номер класса,
-    а так же сохраняет словари в pickle формате
-    """
-    print("Начата загрузка модели в память")
-    #model = KeyVec.load_word2vec_format(word2vec_model_path)  # C text format
-
-    vector_dict = dict()
-    class_dict = dict()
-
+def train_w2v_logistic_regression(word_lists, clf_path_name):
+    X = np.array([], float)  # Пустой список векторов признаков
+    Y = np.array([], int)  # ПУстой список классов
+    len_vec = None
     for i in range(len(word_lists)):  # Проходка по классам
         for word in word_lists[i]:  # проходим по словам из одного класса
             vec = client.get_vec(word)
-            #vec = get_vector_from_model(model, word)  # получаем вектор слова (Слово должно иметь _TYPE)
-            if vec is not None:  # если слова нет в модели - возвращается None
-                vector_dict[word] = vec  # сохраняем вектор в словарь векторов
-                class_dict[word] = i  # i - номер класса по условию функции
+            if vec is not None:
+                len_vec = len(vec)
+                X = np.append(X, vec)  # Формирование списка векторов признаков
+                Y = np.append(Y, i)  # Формирование списка классов
 
-    # Сохранение словарей на жесткий диск на случай ошибок в классификации
-    with open(vec_dict_path_name, 'wb') as f:
-        pickle.dump(vector_dict, f)
-    with open(class_dict_path_name, 'wb') as f:
-        pickle.dump(class_dict, f)
-
-    return vector_dict, class_dict
-
-
-def train_w2v_logistic_regression(vec_dict, class_dict, clf_path_name):
-    clf = LogisticRegression()  # Пустой классификатор
-    X = np.array([], float)  # Пустой список векторов признаков
-    Y = np.array([], int)  # ПУстой список классов
-    for i in vec_dict.keys():
-        if class_dict.get(i) is not None:  # перестраховка на случай ошибок в создании словарей
-            X = np.append(X, vec_dict[i])  # Формирование списка векторов признаков
-            Y = np.append(Y, class_dict[i])  # Формирование списка классов
-
-    # Нужна размерность векторов для решейпинга TODO (Мб можно получить за меньшее кол-во строк)
-    len_vec = None
-    for i in vec_dict.keys():
-        len_vec = len(vec_dict[i])
-        break
     X = X.reshape((-1, len_vec))  # Необходимо для классификатора
 
+    clf = LogisticRegression()  # Пустой классификатор
     clf.fit(X, Y)  # Тренировка классификатора
     # Сохранения классификатора на жесткий диск
     with open(clf_path_name, 'wb') as f:

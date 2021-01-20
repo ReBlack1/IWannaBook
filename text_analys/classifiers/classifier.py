@@ -8,13 +8,13 @@ import web_client.service_connector as client
 class LogisticClassifier    :
     def __init__(self, path):
         with open(path, 'rb') as f:
-            self.person_classifier = pickle.load(f)
+            self.classifier = pickle.load(f)
 
     def get_classifier_by_token(self, token):
         vec = client.get_vec(token).reshape((1, -1))
         if vec.size == 0:
             return None
-        return self.person_classifier.predict(vec) == [1]
+        return self.classifier.predict(vec) == [1]
 
 
 class PersonClassifier(LogisticClassifier):
