@@ -19,25 +19,21 @@ def get_vector_from_model(model, word):
         return None
 
 
-def train_w2v_logistic_regression(word_lists, state_dict, clf_path_name):
+def train_w2v_logistic_regression(word_lists, clf_path_name):
     tok = Tokenizator()
     X = np.array([], float)  # Пустой список векторов признаков
     Y = np.array([], str)  # Пустой список классов
     len_vec = None
-    for i in range(len(word_lists)):  # Проходка по классам
+    for i in word_lists.keys():  # Проходка по классам
         for word in word_lists[i]:  # проходим по словам из одного класса
             token = tok.get_stat_token_word(word)
             if not token:
                 continue
             vec = client.get_vec(token)
-            if vec is not None:
+            if vec is not None and len(vec) > 0:
                 len_vec = len(vec)
                 X = np.append(X, vec)  # Формирование списка векторов признаков
-                if i == 0:
-                    type_class = state_dict["bad"]
-                else:
-                    type_class = state_dict["good"]
-                Y = np.append(Y, type_class)  # Формирование списка классов
+                Y = np.append(Y, i)  # Формирование списка классов
 
     X = X.reshape((-1, len_vec))  # Необходимо для классификатора
 
