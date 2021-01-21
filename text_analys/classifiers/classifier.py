@@ -3,6 +3,7 @@
 
 import pickle
 import web_client.service_connector as client
+import numpy as np
 
 
 class LogisticClassifier    :
@@ -14,7 +15,9 @@ class LogisticClassifier    :
         vec = client.get_vec(token).reshape((1, -1))
         if vec.size == 0:
             return None
-        return self.classifier.predict(vec).tostring().decode()
+        x = self.classifier.predict(vec)
+        x_str = np.array2string(x[0]).replace('\'', '')
+        return x_str
 
 
 class PersonClassifier(LogisticClassifier):
