@@ -15,9 +15,7 @@ class LogisticClassifier    :
         vec = client.get_vec(token).reshape((1, -1))
         if vec.size == 0:
             return None
-        x = self.classifier.predict(vec)
-        x_str = np.array2string(x[0]).replace('\'', '')
-        return x_str
+        return self.classifier.predict(vec)[0]
 
 
 class PersonClassifier(LogisticClassifier):
