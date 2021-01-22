@@ -5,10 +5,11 @@ from navec import Navec
 from slovnet import Syntax
 from ipymarkup import show_dep_ascii_markup as show_markup  # Для красивого вывода синтаксиса
 
+
 class SintaxisNavec:
     def __init__(self):
-        self.navec = Navec.load('navec_news_v1_1B_250K_300d_100q.tar')
-        self.syntax_parser = Syntax.load('slovnet_syntax_news_v1.tar')
+        self.navec = Navec.load('D:\Python\IWannaBook/text_mining/navec_news_v1_1B_250K_300d_100q.tar')
+        self.syntax_parser = Syntax.load('D:\Python\IWannaBook/text_mining\slovnet_syntax_news_v1.tar')
         self.syntax_parser.navec(self.navec)
 
     def get_sintaxis(self, sentence):
@@ -31,7 +32,6 @@ class SintaxisNavec:
             sintax_list.append((words, deps))
 
         return sintax_list[0]
-
 
 # SN = SintaxisNavec()
 # sintax = SN.get_sintaxis("Кем бы ты ни был, кем бы ты не стал, помни, где ты был и кем ты стал.")
