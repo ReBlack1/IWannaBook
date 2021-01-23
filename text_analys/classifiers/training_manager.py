@@ -3,6 +3,7 @@
 from gensim.models import KeyedVectors as KeyVec
 from text_analys.mining.tokenizer import Tokenizator
 from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
 import numpy as np
 import pickle
 import web_client.service_connector as client
@@ -18,6 +19,29 @@ def get_vector_from_model(model, word):
     except KeyError:
         return None
 
+
+def train_w2v_KNeighbors(word_lists, clf_path_name):
+    tok = Tokenizator()
+    X = np.array([], float)  # Пустой список векторов признаков
+    Y = np.array([], str)  # Пустой список классов
+    len_vec = None
+    for i in word_lists.keys():  # Проходка по классам
+        for word in word_lists[i]:  # проходим по словам из одного класса
+            token = tok.get_stat_token_word(word)
+            if not token:
+                continue
+            vec = client.get_vec(token)
+            if vec is not None and len(vec) > 0:
+                len_vec = len(vec)
+                X = np.append(X, vec)  # Формирование списка векторов признаков
+                Y = np.append(Y, i)  # Формирование списка классов
+    X = X.reshape((-1, len_vec))  # Необходимо для классификатора
+    neigh = KNeighborsClassifier(n_neighbors=3)
+    neigh.fit(X, Y)
+    # Сохранения классификатора на жесткий диск
+    with open(clf_path_name, 'wb') as f:
+        pickle.dump(neigh, f)
+    return neigh
 
 def train_w2v_logistic_regression(word_lists, clf_path_name):
     tok = Tokenizator()

@@ -11,7 +11,7 @@ text = text.replace(',', '')
 text = text.replace('.', '')
 words = text.split()
 tok = Tokenizator()
-classifier = CruelClassifier()
+classifier = EmotionalClassifier()
 for word in words:
     token = tok.get_stat_token_word(word)
     answer = classifier.get_classifier_by_token(token)

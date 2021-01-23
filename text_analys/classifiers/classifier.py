@@ -35,3 +35,9 @@ class SexualClassifier(LogisticClassifier):
         path = r"D:\Python\IWannaBook\text_analys\classifiers\sexual_train.plc"
         super().__init__(path)
 
+
+class EmotionalClassifier(LogisticClassifier):
+    def __init__(self):
+        path = r"D:\Python\IWannaBook\text_analys\classifiers\emotional_train.plc"
+        super().__init__(path)
+
