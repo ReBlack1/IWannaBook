@@ -19,8 +19,7 @@ def get_vector_from_model(model, word):
     except KeyError:
         return None
 
-
-def train_w2v_logistic_regression(clf, word_lists, clf_path_name):
+def prepare_data(word_lists):
     tok = Tokenizator()
     X = np.array([], float)  # Пустой список векторов признаков
     Y = np.array([], str)  # Пустой список классов
@@ -31,17 +30,33 @@ def train_w2v_logistic_regression(clf, word_lists, clf_path_name):
             if not token:
                 continue
             vec = client.get_vec(token)
-            if vec is not None and len(vec) > 0:
-                len_vec = len(vec)
-                X = np.append(X, vec)  # Формирование списка векторов признаков
-                Y = np.append(Y, word_class)  # Формирование списка классов
+            if vec is None or len(vec) == 0:
+                continue
+            len_vec = len(vec)
+            X = np.append(X, vec)  # Формирование списка векторов признаков
+            Y = np.append(Y, word_class)  # Формирование списка классов
     X = X.reshape((-1, len_vec))  # Необходимо для классификатора
+    return X, Y
+
+
+def train_w2v_logistic_regression(word_lists, clf_path_name):
+    X, Y = prepare_data(word_lists)
+    clf = LogisticRegression()
     clf.fit(X, Y)  # Тренировка классификатора
     # Сохранения классификатора на жесткий диск
     with open(clf_path_name, 'wb') as f:
         pickle.dump(clf, f)
     return clf
 
+
+def train_w2v_KNeighbors(word_lists, clf_path_name):
+    X, Y = prepare_data(word_lists)
+    clf = KNeighborsClassifier(n_neighbors=3)
+    clf.fit(X, Y)  # Тренировка классификатора
+    # Сохранения классификатора на жесткий диск
+    with open(clf_path_name, 'wb') as f:
+        pickle.dump(clf, f)
+    return clf
 
 def random_sample_f32(size=None):
     f32max = 1 << np.finfo(np.float32).nmant

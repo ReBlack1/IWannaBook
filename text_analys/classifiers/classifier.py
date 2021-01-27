@@ -17,6 +17,11 @@ class LogisticClassifier    :
             return None
         return self.classifier.predict(vec)[0]
 
+    def predict_by_vectors(self, vec):
+        if vec.size == 0:
+            return None
+        return self.classifier.predict(vec)
+
 
 class PersonClassifier(LogisticClassifier):
     def __init__(self):
