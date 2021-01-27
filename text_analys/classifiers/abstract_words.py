@@ -1,10 +1,9 @@
 from text_analys.classifiers.classifier import *
 import pickle
-import time
-import networkx as nx
-import book_manager
-from lxml import etree
-import re
+# import networkx as nx
+# import book_manager
+# from lxml import etree
+# import re
 
 
 def open_graph_from_plc(path):
@@ -34,29 +33,35 @@ def find_cnt_all_words(graph, vectors, book_w_l):
         cnt_all = cnt_all + graph.nodes[word]["size"]  # количество слов, синонимичных текущему
     return cnt_all
 
-if __name__ == '__main__':
-    emotional_classifier = EmotionalClassifier()
 
-    start = time.time()
-
-    path = r"D:\Python\IWannaBook\text_analys\classifiers\opt_graph_10019.plc"
+def get_all_about_graph(path):
     opt_graph = open_graph_from_plc(path)
     book_w_l = opt_graph['book_word_list']
     vectors = opt_graph['vectors']
     graph = opt_graph['graph']
+    return book_w_l, vectors, graph
 
+
+def get_abstract_rating(path, emotional_classifier):
+    book_w_l, vectors, graph = get_all_about_graph(path)
     abstract_word_list = find_abstract_list(graph, vectors, book_w_l, emotional_classifier)
     cnt_all = find_cnt_all_words(graph, vectors, book_w_l)
     cnt_abstract = 0  # количество абстрактных слов
     for word in abstract_word_list:
         cnt_abstract = cnt_abstract + word[1]
+    return cnt_abstract / cnt_all
 
-    end = time.time()
 
-    print(end - start)
-    print('Абстрактных слов: ', cnt_abstract)
-    print('Всего слов: ', cnt_all)
-    print('Книга абстрактна на ', str('{:.2f}'.format(cnt_abstract / cnt_all)))
+if __name__ == '__main__':
+    emotional_classifier = EmotionalClassifier()
+    path = r"D:\Python\IWannaBook\text_analys\classifiers\opt_graph_10019.plc"
+
+    print("rating: ", str(get_abstract_rating(path, emotional_classifier)))
+
+    book_w_l, vectors, graph = get_all_about_graph(path)
+    print(find_abstract_list(graph, vectors, book_w_l, emotional_classifier))
+
+    print(find_cnt_all_words(graph,vectors,book_w_l))
 
     # # поиск предложений в книге
     # # найти предложение с максимальным количеством абстрактных слов
