@@ -1,9 +1,6 @@
 from text_analys.classifiers.classifier import *
 import pickle
-# import networkx as nx
-# import book_manager
-# from lxml import etree
-# import re
+
 
 
 def open_graph_from_plc(path):
@@ -62,23 +59,3 @@ if __name__ == '__main__':
     print(find_abstract_list(graph, vectors, book_w_l, emotional_classifier))
 
     print(find_cnt_all_words(graph,vectors,book_w_l))
-
-    # # поиск предложений в книге
-    # # найти предложение с максимальным количеством абстрактных слов
-    # book_xml = book_manager.open_book(book_path)
-    # _xpath = etree.XPath(r'//*')
-    # dom = etree.XML(book_xml)
-    # ans = _xpath(dom)
-    #
-    # sintax_list = []
-    # chunk = []
-    #
-    # for i in ans:
-    #     """Обработка заголовков, автора и т.д. через i.text """
-    #     if re.search(r"\b[p]", i.tag):  # предполагаю, что строки с текстом заканчиваются на p
-    #         if not i.text:  # Могут быть None
-    #             continue
-    #         for sentence in i.text.split("."):
-    #             """ Построчная обработка книги перед предпроцессингом (Только текста) """
-    #             if not sentence:
-    #                 continue
