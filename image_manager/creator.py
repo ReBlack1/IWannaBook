@@ -55,12 +55,12 @@ def find_best_abstract_sentence(book_path, graph_path):
                 znam = (len(sentence_word_list) - cnt)
                 if cnt > 0 and znam != 0:
                     cur_sentence_rating = math.log10(len(sentence_word_list)) * cnt / znam
-                    print(cur_sentence_rating, " : ", sentence)
+                    #print(cur_sentence_rating, " : ", sentence)
                 if cur_sentence_rating > max_sentence_rating:
                     max_sentence_rating = cur_sentence_rating
                     best_sentence = sentence
-    print(max_sentence_rating)
-    print(best_sentence)
+    #print(max_sentence_rating)
+    #print(best_sentence)
     return best_sentence
 
 
@@ -68,6 +68,8 @@ if __name__ == '__main__':
     graph_path = r"D:\Python\IWannaBook\text_analys\classifiers\opt_graph_10019.plc"
     book_path = r"D:\Python\IWannaBook\test_books\flibusta_10019.zip"
     sentence = find_best_abstract_sentence(book_path, graph_path)
-
+    sentence = sentence.capitalize()
+    sentence = sentence + '.'
+    print(sentence)
     best_img = text_on_picture(sentence)
     best_img.save("BEST.png", "png")
