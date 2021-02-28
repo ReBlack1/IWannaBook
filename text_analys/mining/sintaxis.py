@@ -8,8 +8,8 @@ from ipymarkup import show_dep_ascii_markup as show_markup  # Для краси�
 
 class SintaxisNavec:
     def __init__(self):
-        self.navec = Navec.load('D:\Python\IWannaBook/text_mining/navec_news_v1_1B_250K_300d_100q.tar')
-        self.syntax_parser = Syntax.load('D:\Python\IWannaBook/text_mining\slovnet_syntax_news_v1.tar')
+        self.navec = Navec.load(r'D:\Python\IWannaBook\text_analys\mining\navec_news_v1_1B_250K_300d_100q.tar')
+        self.syntax_parser = Syntax.load(r'D:\Python\IWannaBook\text_analys\mining\slovnet_syntax_news_v1.tar')
         self.syntax_parser.navec(self.navec)
 
     def get_sintaxis(self, sentence):

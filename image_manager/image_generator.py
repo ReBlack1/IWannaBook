@@ -2,7 +2,7 @@ import PIL
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 import cv2
-from text_mining.sintaxis import SintaxisNavec
+from text_analys.mining.sintaxis import SintaxisNavec
 import re
 from guppy import hpy
 import time
@@ -241,10 +241,12 @@ def put_text_pil(params):
     list_keys.sort(reverse=True)
     for cur_rating in list_keys:
         drop_text = exclude_bad_phrases(splitted_text[cur_rating])
+        spl_rating = cur_rating
         if drop_text is None:
             continue
-        spl_rating = cur_rating
         break
+    if drop_text is None:
+        raise TypeError("")
     spl_rating = spl_rating * count_lines
     drop_text = merge_str(drop_text)  # Лучшие разбивки по смыслу
     print("Лучшие разбиения(по смыслу):")
@@ -296,7 +298,7 @@ def put_text_pil(params):
         im = Image.open(img_path)
     draw = ImageDraw.Draw(im)
     add_text_to_photo(img, draw, alignment_vertical_type, alignment_horizontal_type, margin, best_split, font_size, font)
-    im.save(f"final_img{count_lines}.png", "png")  # Сохраняет лучшую картинку
+    #im.save(f"final_img{count_lines}.png", "png")  # Сохраняет лучшую картинку
 
     # img = np.asarray(im)
     return im, font_size
@@ -323,7 +325,10 @@ def text_on_picture(text, img_path=None, font="14539.ttf", margin=(20, 20, 20, 2
     for count_line in range(1, 5):
         print("Длина разбиения: ", str(count_line))
         params['count_lines'] = count_line
-        cur_img, font_size = put_text_pil(params)
+        try:
+            cur_img, font_size = put_text_pil(params)
+        except TypeError:
+            continue
         img_list.append(cur_img)
         font_size_list.append(font_size)
     best_img = find_best_photo(img_list, font_size_list)
@@ -345,7 +350,7 @@ wolf_idea = [
 
 if __name__ == '__main__':
     start = time.time()
-    text = "Кем бы ты ни был, кем бы ты не стал, помни, где ты был и кем ты стал."
+    text = "очередь чреда положение."
     best_img = text_on_picture(text)
     best_img.save("BEST.png", "png")
     # best_img = np.asarray(best_img)
